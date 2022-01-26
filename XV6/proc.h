@@ -60,6 +60,7 @@ struct proc {
   int sleeping_t;    // Time spent being in SLEEPING state
   int runnable_t;    // Time spent being in RUNNABLE state ->this is specified as ready time in the project description, changed it to runnable time since it made more sence
   int running_t;     // Time spent being in RUNNING state
+  int termination_t; // Time which this process was terminated (turn into ZOMBIE)
 
 };
 // Scheduling options
