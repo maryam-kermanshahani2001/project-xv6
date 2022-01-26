@@ -58,7 +58,7 @@ struct proc {
 
   int creation_t;    // Time which this process was created (turn into EMBRYO)
   int sleeping_t;    // Time spent being in SLEEPING state
-  int runnable_t;    // Time spent being in RUNNABLE state
+  int runnable_t;    // Time spent being in RUNNABLE state ->this is specified as ready time in the project description, changed it to runnable time since it made more sence
   int running_t;     // Time spent being in RUNNING state
   int termination_t; // Time which this process was terminated (turn into ZOMBIE)
 
@@ -67,8 +67,9 @@ struct proc {
 enum schedPolicy
 {
   DEFAULT = 0,
-  ROUND_ROBIN = 1,
-  PRIORITY = 2,
+  ROUND_ROBIN = 1,// this is the first part of the project
+  PRIORITY = 2,//this is the second part of the project
+  MULTILAYRED_PRIORITY = 3,// this is for the third part of the project
 };
 extern enum schedPolicy policy;
 // Process memory is laid out contiguously, low addresses first:
