@@ -60,7 +60,6 @@ struct proc {
   int sleeping_t;    // Time spent being in SLEEPING state
   int runnable_t;    // Time spent being in RUNNABLE state
   int running_t;     // Time spent being in RUNNING state
-  int termination_t; // Time which this process was terminated (turn into ZOMBIE)
 
 };
 // Scheduling options
