@@ -52,7 +52,7 @@ struct proc {
   int stackTop;                // top of the stack
   int threads;                 // the number of threads using the same pgdir
   int queue;                  // Defines in which queue the process belongs
-
+  int queueIndex;
 
   int priority;       // Process priority, 1 being the highest, 6 lowest.
 
