@@ -642,9 +642,6 @@ sleep(void *chan, struct spinlock *lk)
     release(&ptable.lock);
     acquire(lk);
   }
-  if(policy==MULTILAYRED_PRIORITY_WITH_RULES){
-    setPriority(1);//change it to the highest priorityS
-  }
 }
 
 //PAGEBREAK!
@@ -658,6 +655,11 @@ wakeup1(void *chan)
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
     if(p->state == SLEEPING && p->chan == chan)
       p->state = RUNNABLE;
+
+  
+  if(policy==MULTILAYRED_PRIORITY_WITH_RULES){
+    setPriority(1);//change it to the highest priorityS
+  }
 }
 
 // Wake up all processes sleeping on chan.

@@ -53,6 +53,11 @@ trap(struct trapframe *tf)
       ticks++;
       wakeup(&ticks);
       release(&tickslock);
+      // if (policy==MULTILAYRED_PRIORITY || policy== MULTILAYRED_PRIORITY_WITH_RULES){
+      //   if(existsBetterProccess()==1){
+      //   yield();//to make the os preemtive as specified
+      //   }
+      // }
     }
     lapiceoi();
     break;
