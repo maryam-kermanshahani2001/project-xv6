@@ -127,11 +127,17 @@ trap(struct trapframe *tf)
       yield();
       break;
     case MULTILAYRED_PRIORITY:
-    if (ticks % (7 - (myproc()->queue)) == 0) {
-          yield();
-       }
-        break;
-    }
+      if (ticks % (7 - (myproc()->queue)) == 0) {
+            yield();
+        }
+          break;
+    case MULTILAYRED_PRIORITY_WITH_RULES:
+      if (ticks % (7 - (myproc()->queue)) == 0) {
+            yield();
+        }
+          break;
+      }
+    
   }
   
   // Update each process sleeping, runnable, running time

@@ -460,8 +460,10 @@ scheduler(void)
     sti();
     acquire(&ptable.lock);
 
+    struct proc * itP;
     switch (policy)
     {
+      int queueNumber;
 
       case DEFAULT:
       case ROUND_ROBIN:
@@ -501,8 +503,27 @@ scheduler(void)
 
       case MULTILAYRED_PRIORITY:
         hasRunnable = 0;
-        int queueNumber=7;
-        struct proc * itP;
+        queueNumber=7;
+        for (itP = ptable.proc; itP < &ptable.proc[NPROC]; itP++){
+          if(itP->state!=RUNNABLE){
+            continue;
+          }
+          hasRunnable=1;
+          if(itP->queue < queueNumber){
+            queueNumber=itP->queue;
+            highest_p= itP;
+          }else if(itP->queue==highest_p->queue && highest_p->queueIndex>itP->queueIndex){
+            highest_p= itP;//since it has a less index in the list
+          }
+        }
+        if (hasRunnable)
+        {
+          switch_process(c, highest_p);
+        }
+        break;
+      case MULTILAYRED_PRIORITY_WITH_RULES:
+        hasRunnable = 0;
+        queueNumber=7;
         for (itP = ptable.proc; itP < &ptable.proc[NPROC]; itP++){
           if(itP->state!=RUNNABLE){
             continue;
@@ -620,6 +641,9 @@ sleep(void *chan, struct spinlock *lk)
   if(lk != &ptable.lock){  //DOC: sleeplock2
     release(&ptable.lock);
     acquire(lk);
+  }
+  if(policy==MULTILAYRED_PRIORITY_WITH_RULES){
+    setPriority(1);//change it to the highest priorityS
   }
 }
 
@@ -853,7 +877,7 @@ int setPriority(int newPriority)
 {
   struct proc *p = myproc();
 
-  if(policy==MULTILAYRED_PRIORITY){
+  if(policy==MULTILAYRED_PRIORITY || policy==MULTILAYRED_PRIORITY_WITH_RULES){
     if (newPriority > 0 && newPriority < 7)
     {
       p->priority = newPriority;
@@ -1012,4 +1036,23 @@ void updateStateDurations()
       break;
     }
   }
+}
+
+int existsBetterProccess(){
+//no need to check if the policy is 3 or 4 since its checked before calling the function
+  int change = 0;
+  struct proc* p;
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    if(p->state!=RUNNABLE){
+      continue;
+    }
+    if(p->queue<myproc()->queue){
+      change=1;
+    }else if(p->queue==myproc()->queue && p->queueIndex<myproc()->queueIndex ){
+      change=1;
+    }
+  }
+
+  return change;
+
 }

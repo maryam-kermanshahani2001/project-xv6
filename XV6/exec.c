@@ -105,6 +105,11 @@ exec(char *path, char **argv)
   curproc->stackTop = sp;
   switchuvm(curproc);
   freevm(oldpgdir);
+
+  //here we change the priority to the default value(if its working with the MULTILAYRED_PRIORITY_WITH_RULES policy):
+  if (policy==MULTILAYRED_PRIORITY_WITH_RULES){
+    setPriority(DEFAULT_PRIORITY);
+  }
   return 0;
 
  bad:

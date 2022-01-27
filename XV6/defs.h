@@ -131,6 +131,7 @@ int             getCBT(int pid);
 int             changePolicy(int newPolicy);
 int             myWait(int *procTimes);
 void            updateStateDurations();
+int             existsBetterProccess();
 // swtch.S
 void            swtch(struct context**, struct context*);
 

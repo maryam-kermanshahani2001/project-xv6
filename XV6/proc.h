@@ -70,6 +70,9 @@ enum schedPolicy
   ROUND_ROBIN = 1,// this is the first part of the project
   PRIORITY = 2,//this is the second part of the project
   MULTILAYRED_PRIORITY = 3,// this is for the third part of the project
+  MULTILAYRED_PRIORITY_WITH_RULES=4,//for the last oart of the project
+
+  //TODO->change the 2 functions for MULTILAYRED_PRIORITY_WITH_RULES
 };
 extern enum schedPolicy policy;
 // Process memory is laid out contiguously, low addresses first:
