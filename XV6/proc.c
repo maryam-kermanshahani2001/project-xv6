@@ -125,6 +125,7 @@ found:
   p->sleeping_t = 0;
   p->runnable_t = 0;
   p->running_t = 0;
+  p->creation_t = ticks;
 
   p->priority = DEFAULT_PRIORITY;
 
@@ -342,6 +343,7 @@ exit(void)
 
   // Jump into the scheduler, never to return.
   curproc->state = ZOMBIE;
+  curproc->termination_t=ticks;
   sched();
   panic("zombie exit");
 }
@@ -458,45 +460,67 @@ scheduler(void)
     sti();
     acquire(&ptable.lock);
 
-switch (policy)
-{
+    switch (policy)
+    {
 
-    case DEFAULT:
-    case ROUND_ROBIN:
-      for (p = ptable.proc; p < &ptable.proc[NPROC]; p++)
-      {
-        if (p->state != RUNNABLE)
-          continue;
-        switch_process(c, p);
-      }
-      break;
-
-    case PRIORITY:
-      hasRunnable = 0;
-      for (p = ptable.proc; p < &ptable.proc[NPROC]; p++)
-      {
-        if (p->state == RUNNABLE)
+      case DEFAULT:
+      case ROUND_ROBIN:
+        for (p = ptable.proc; p < &ptable.proc[NPROC]; p++)
         {
-          highest_p = p;
-          hasRunnable = 1;
-          break;
+          if (p->state != RUNNABLE)
+            continue;
+          switch_process(c, p);
         }
-      }
+        break;
 
-      for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) // finding the process with highest priority
-      {
-        if (p->state != RUNNABLE)
-          continue;
-        if (p->priority < highest_p->priority)
-          highest_p = p;
-      }
+      case PRIORITY:
+        hasRunnable = 0;
+        for (p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+        {
+          if (p->state == RUNNABLE)
+          {
+            highest_p = p;
+            hasRunnable = 1;
+            break;
+          }
+        }
 
-      if (hasRunnable)
-      {
-        switch_process(c, highest_p);
-      }
-      break;
-}
+        for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) // finding the process with highest priority
+        {
+          if (p->state != RUNNABLE)
+            continue;
+          if (p->priority < highest_p->priority)
+            highest_p = p;
+        }
+
+        if (hasRunnable)
+        {
+          switch_process(c, highest_p);
+        }
+        break;
+
+      case MULTILAYRED_PRIORITY:
+        hasRunnable = 0;
+        int queueNumber=7;
+        struct proc * itP;
+        for (itP = ptable.proc; itP < &ptable.proc[NPROC]; itP++){
+          if(itP->state!=RUNNABLE){
+            continue;
+          }
+          hasRunnable=1;
+          if(itP->queue < queueNumber){
+            queueNumber=itP->queue;
+            highest_p= itP;
+          }else if(itP->queue==highest_p->queue && highest_p->queueIndex>itP->queueIndex){
+            highest_p= itP;//since it has a less index in the list
+          }
+        }
+        if (hasRunnable)
+        {
+          switch_process(c, highest_p);
+        }
+        break;
+    }
     
     release(&ptable.lock);
 
@@ -828,13 +852,49 @@ int thread_wait() {
 int setPriority(int newPriority)
 {
   struct proc *p = myproc();
+
+  if(policy==MULTILAYRED_PRIORITY){
+    if (newPriority > 0 && newPriority < 7)
+    {
+      p->priority = newPriority;
+      p->queue=newPriority;//since our code works as less priority (more important -yes its a bit counter intuitive-)
+      //now to find the index in the queue 
+      int index = 0;
+      struct proc *iterativep;
+      for (iterativep = ptable.proc; iterativep < &ptable.proc[NPROC]; iterativep++){
+        if (iterativep->queue==newPriority){
+          if(index<=iterativep->queueIndex){
+            index=iterativep->queueIndex+1;
+          }
+        }
+      }
+      return 0;
+    }
+    else{
+      p->priority = 5;
+      p->queue=newPriority;
+      //now to find the index in the queue 
+      struct proc *iterativep;
+      int index = 0;
+      for (iterativep = ptable.proc; iterativep < &ptable.proc[NPROC]; iterativep++){
+        if (iterativep->queue==newPriority){
+          if(index<=iterativep->queueIndex){
+            index=iterativep->queueIndex+1;
+          }
+        }
+      }
+      return 0;
+    }
+  }
   if (newPriority > 0 && newPriority < 7)
   {
     p->priority = newPriority;
     return 0;
   }
-  else
-    return -1;
+  else{
+    p->priority = 5;
+    return 0;
+  }
 }
 
 int changePolicy(int newPolicy)
