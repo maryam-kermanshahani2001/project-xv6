@@ -126,6 +126,11 @@ trap(struct trapframe *tf)
     case PRIORITY:
       yield();
       break;
+    case MULTILAYRED_PRIORITY:
+    if (ticks % (7 - (myproc()->queue)) == 0) {
+          yield();
+       }
+        break;
     }
   }
   
